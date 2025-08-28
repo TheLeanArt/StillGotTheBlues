@@ -1,0 +1,61 @@
+; Super Game Boy Sound Mixer
+;
+; Copyright (c) 2025 Dmitry Shechtman
+
+CHARMAP "/", $1B
+CHARMAP "-", $1C
+CHARMAP " ", $7A
+
+CHARMAP "A", $01
+CHARMAP "B", $02
+CHARMAP "C", $03
+CHARMAP "D", $04
+CHARMAP "E", $05
+CHARMAP "F", $06
+CHARMAP "G", $07
+CHARMAP "H", $08
+CHARMAP "I", $09
+CHARMAP "J", $0A
+CHARMAP "K", $0B
+CHARMAP "L", $0C
+CHARMAP "M", $0D
+CHARMAP "N", $0E
+CHARMAP "O", $0F
+CHARMAP "P", $10
+CHARMAP "Q", $11
+CHARMAP "R", $12
+CHARMAP "S", $13
+CHARMAP "T", $14
+CHARMAP "U", $15
+CHARMAP "V", $16
+CHARMAP "W", $17
+CHARMAP "X", $18
+CHARMAP "Y", $19
+CHARMAP "Z", $1A
+
+CHARMAP "a", $01
+CHARMAP "b", $02
+CHARMAP "c", $03
+CHARMAP "d", $04
+CHARMAP "e", $05
+CHARMAP "f", $06
+CHARMAP "g", $07
+CHARMAP "h", $08
+CHARMAP "i", $09
+CHARMAP "j", $0A
+CHARMAP "k", $0B
+CHARMAP "l", $0C
+CHARMAP "m", $0D
+CHARMAP "n", $0E
+CHARMAP "o", $0F
+CHARMAP "p", $10
+CHARMAP "q", $11
+CHARMAP "r", $12
+CHARMAP "s", $13
+CHARMAP "t", $14
+CHARMAP "u", $15
+CHARMAP "v", $16
+CHARMAP "w", $17
+CHARMAP "x", $18
+CHARMAP "y", $19
+CHARMAP "z", $1A
