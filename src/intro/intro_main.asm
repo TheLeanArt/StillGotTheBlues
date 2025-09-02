@@ -9,6 +9,7 @@ include "intro.inc"
 
 MACRO INTRO_META_INIT
 	ld hl, MAP_INTRO_\1 + ROW_INTRO_\1 * TILEMAP_WIDTH + COL_INTRO_\1
+	rst WaitVRAM               ; Wait for VRAM to become accessible
 	ld a, T_INTRO_\1           ; Load top left tile ID
 	ld [hli], a                ; Set top left tile and advance to the right
 	ld a, T_INTRO_\1 + 2       ; Load top right tile ID
@@ -46,16 +47,6 @@ FOR I, 0, INTRO_\1_WIDTH
 ENDR
 ENDM
 
-MACRO INTRO_WAIT
-	rst WaitVBlank             ; Wait for the next VBlank
-ENDM
-
-
-SECTION "Flags", HRAM
-
-hFlags::
-	ds 1
-
 
 ; Initialization portion adapted from Simple GB ASM Examples by Dave VanEe
 ; License: CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
@@ -77,17 +68,9 @@ Intro::
 	cp OAM_SIZE                ; End of OAM reached?
 	jr nz, .clearOAMLoop       ; If not, continue looping
 
-.waitVBlank
-    ldh a, [rLY]               ; Read the LY register to check the current scanline
-    cp SCREEN_HEIGHT_PX        ; Compare the current scanline to the first scanline of VBlank
-    jr c, .waitVBlank          ; Loop as long as the carry flag is set
-
-	xor a                      ; Once we exit the loop we're safely in VBlank
-	ldh [rLCDC], a             ; Disable the LCD (must be done during VBlank to protect the LCD)
-
 	ld de, IntroTiles
 	ld hl, STARTOF(VRAM) | T_INTRO_REG << 4
-	COPY_1BPP Intro
+	COPY_1BPP_SAFE Intro
 
 	call ClearBackground       ; Clear the logo from the background
 	INTRO_META_INIT BY         ; Draw BY on the background
@@ -95,11 +78,11 @@ Intro::
 
 	ld a, %11_11_01_00         ; Display dark gray as black
 	ldh [rOBP0], a             ; Set the default object palette
-
+	
 	ldh a, [hFlags]            ; Load our flags into the A register
 	bit B_FLAG_COLOR, a        ; Are we running on GBC?
 	call nz, SetPalettes       ; If yes, set palettes
-	
+
 	ld a, IE_VBLANK            ; Load the flag to enable the VBlank and STAT interrupts into A
 	ldh [rIE], a               ; Load the prepared flag into the interrupt enable register
 	xor a                      ; Set A to zero
@@ -118,14 +101,14 @@ Intro::
 
 	ld b, INTRO_SGB_DELAY      ; ~1 sec delay to make up for the SGB bootup animation
 .waitLoop
-	INTRO_WAIT
+	rst WaitVBlank             ; Wait for the next VBlank
 	dec b                      ; Decrement the counter
 	jr nz, .waitLoop           ; Continue to loop unless zero
 
 .drop
 	ld e, 0                    ; Use E as our step counter
 .dropLoop
-	INTRO_WAIT
+	rst WaitVBlank             ; Wait for the next VBlank
 	ld hl, wShadowOAM          ; Start from the top
 	ld d, HIGH(IntroDropLUT)   ; Set the upper address byte to the start of our LUT
 	ld a, [de]                 ; Load the Y coordinate value
@@ -173,7 +156,7 @@ ENDR
 
 	ld e, 0                    ; Use E as our step counter
 .mainLoop
-	INTRO_WAIT
+	rst WaitVBlank             ; Wait for the next VBlank
 	ld hl, wShadowOAM          ; Start from the top
 	ld b, OBJ_INTRO_END * 2    ; Loop all the way to the end
 	ld d, HIGH(IntroLUT)       ; Set the upper address byte to the start of our LUT
@@ -246,8 +229,9 @@ ClearBackground:
 
 ClearLogo:
 	ld c, LOGO_WIDTH + 1       ; Clear ®
-	xor a
 .loop
+	rst WaitVRAM               ; Wait for VRAM to become accessible
+	xor a
 	ld [hli], a
 	dec c
 	jr nz, .loop
@@ -261,7 +245,7 @@ ClearWindow:
 
 SetWindow:
 	ld hl, TILEMAP1 + COL_LOGO
-	ld a, T_LOGO
+	ld b, T_LOGO
 	call .logo
 	ld l, TILEMAP_WIDTH + COL_LOGO
 	; Fall through
@@ -269,8 +253,10 @@ SetWindow:
 .logo:
 	ld c, LOGO_WIDTH
 .loop
-	ld [hli], a
-	inc a
+	rst WaitVRAM               ; Wait for VRAM to become accessible
+	ld [hl], b
+	inc l
+	inc b
 	dec c
 	jr nz, .loop
 	ret
@@ -344,6 +330,12 @@ REPT 5
 ENDR
 	ld [hli], a
 	ret
+
+
+SECTION "Flags", HRAM
+
+hFlags::
+	ds 1
 
 
 SECTION "Intro Tile data", ROMX, BANK[BANK_INTRO], ALIGN[8]
