@@ -3,7 +3,7 @@
 # Copyright (c) 2025 Dmitry Shechtman
 
 
-VER = jam
+VER = 0.1.0
 NAME = sgb_$(VER)
 TITLE = STILLGOTTHEBLUES
 
